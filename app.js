@@ -1,3 +1,28 @@
+function saveBooks() {
+  try {
+    localStorage.setItem('books', JSON.stringify(books));
+  } catch (e) {
+    // storage not available or quota exceeded
+    console.warn('Could not save books to localStorage', e);
+  }
+}
+
+function loadBooks() {
+  try {
+    const raw = localStorage.getItem('books');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        // mutate the existing `books` array from data.js so other code keeps referencing it
+        books.length = 0;
+        parsed.forEach(b => books.push(b));
+      }
+    }
+  } catch (e) {
+    console.warn('Could not load books from localStorage', e);
+  }
+}
+
 function renderBooks() {
   const tbody = document.getElementById('book-list');
   tbody.innerHTML = '';
@@ -40,6 +65,7 @@ function renderBooks() {
           return;
         }
         books[index].title = newTitle;
+        saveBooks();
         renderBooks();
       };
 
@@ -66,4 +92,24 @@ function renderBooks() {
   });
 }
 
-renderBooks();
+// Initialise l'application : charge depuis le storage s'il existe,
+// sinon écrit le tableau initial venant de data.js dans le storage.
+function init() {
+  try {
+    const has = localStorage.getItem('books');
+    if (has === null) {
+      // aucun contenu en storage -> sauvegarder l'état initial
+      saveBooks();
+    } else {
+      // charger depuis localStorage
+      loadBooks();
+    }
+  } catch (e) {
+    // localStorage peut être inaccessible (mode privé, politiques, etc.)
+    console.warn('localStorage inaccessible durant init', e);
+  }
+
+  renderBooks();
+}
+
+init();
