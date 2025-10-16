@@ -1,0 +1,13 @@
+stages:
+  - build
+  - test
+
+build_job:
+  stage: build
+  script:
+    - echo "GitLab user: $GITLAB_USER_LOGIN"
+
+test_job:
+  stage: test
+  script:
+    - echo "Branch: $CI_COMMIT_REF_NAME"
